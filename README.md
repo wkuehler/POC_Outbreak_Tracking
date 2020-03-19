@@ -17,17 +17,17 @@ This is the Javascript library that we will use to render our chart.  In this ex
 The component is pretty straight forward:  
 
 We create an attribute that will hold the data retrieved from our controller.  Notice that the type is Object.
-```json
+```
 <aura:attribute access="private" name="infectiondata" type="Object" />
 ```
 
 We load our static resource which contains the chart.js javascript library.  Once the library is loaded, we call our component controller's doInit method
-```json
+```
 <ltng:require scripts="{!$Resource.ChartJS23}" afterScriptsLoaded="{!c.doInit}" />
 ```
 
 Finally, we create the neccessary markup to display our actual chart
-```json
+```
 	<lightning:card>
 		<div>
 			<div class="slds-text-heading--medium">Infections / Deaths Bar</div>
@@ -39,7 +39,7 @@ Finally, we create the neccessary markup to display our actual chart
 ### Component Controller
 
 The only method in our controller is the doInit method which calls out getInfectionData_js helper method
-```json
+```
 ({
     doInit : function(cmp, event, helper) {
         helper.getInfectionData_js(cmp); 
