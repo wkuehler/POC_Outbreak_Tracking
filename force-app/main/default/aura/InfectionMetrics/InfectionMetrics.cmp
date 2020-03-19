@@ -1,0 +1,17 @@
+<aura:component controller="InfectionMetricsController" implements="forceCommunity:availableForAllPageTypes,flexipage:availableForAllPageTypes" access="global" >
+	<aura:attribute access="private" name="infectiondata" type="Object" />
+
+    <ltng:require scripts="{!join(',',
+    				$Resource.ChartJS23, 
+    				$Resource.OlympicDataService)}"
+					afterScriptsLoaded="{!c.doInit}" />
+
+    <aura:registerEvent name="chartEvent" type="c:ChartEvent"/>
+
+	<lightning:card>
+		<div>
+			<div class="slds-text-heading--medium">Infections / Deaths Bar</div>
+			<canvas aura:id="stackedbarchart" height="380"></canvas>
+		</div>
+	</lightning:card>
+</aura:component>
