@@ -21,6 +21,20 @@ We create an attribute that will hold the data retrieved from our controller
 <aura:attribute access="private" name="infectiondata" type="Object" />
 ```
 
+We load our static resource which contains the chart.js javascript library.  Once the library is loaded, we call our component controller's doInit method
+```json
+<ltng:require scripts="{!$Resource.ChartJS23}" afterScriptsLoaded="{!c.doInit}" />
+```
+
+Finally, we create the neccessary markup to display our actual chart
+```json
+	<lightning:card>
+		<div>
+			<div class="slds-text-heading--medium">Infections / Deaths Bar</div>
+			<canvas aura:id="stackedbarchart" height="380"></canvas>
+		</div>
+	</lightning:card>
+```
 
 
 ### Org Development Model
