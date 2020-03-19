@@ -1,6 +1,8 @@
 # POC Outbreak Tracking
 My goals for this proof of concept was to demonstrate how to use Chart.js within Aura Lightning Components.  Given current events, i decided to use COVID-19 infection data from the Commonwealth of Pennsylvania for my dataset.  The final result can be seen in the following public community here:  https://rha-outbreak-tracking-developer-edition.na111.force.com/s/
 
+Keep in mind that this is a proof of concept and a work in progress.  Feedback welcome.
+
 ![image](https://user-images.githubusercontent.com/1509672/77087221-3e2a4a00-69d9-11ea-8f85-5da916c8fc9f.png)
 
 ## Part 1: Creating the Infection Metrics custom object
