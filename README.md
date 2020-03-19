@@ -192,8 +192,43 @@ for(Infection_Metric__c im : ims) {
 }
 ```
 
-We then convert our unique set of dates to an ordered list.  While this was important in an early version, this could most likely be removed.
+We then convert our unique set of dates to an ordered list.
 ```javascript
 List<Date> dateslist = new List<Date>(datesset);
 dateslist.sort();
+```
+
+We then create our final data structure and initialize all data values to zero.
+```javascript
+Map<String, Metrics> metriclist = new Map<String, Metrics>();
+
+for(String county : counties) {
+    List<Integer> tempints = new List<Integer>();
+    for(Date d : dateslist) {
+        tempints.add(i);
+    }
+
+    metriclist.put(county, new Metrics(county, hexCodeGenerator(), tempints));
+}
+```
+
+Note that we use a map for the final data structure so that we can easily determine which Metric object relates to each County
+```javascript
+metriclist.put(county, new Metrics(county, hexCodeGenerator(), tempints));
+```
+
+We then iterate through our list of infection metrics that we queried earlier and update our data structure with the actual Infection__c values.
+```javascript
+for(Infection_Metric__c im : ims) {
+    metriclist.get(im.County__c).data[dateslist.indexOf(im.Date__c)] = Integer.valueOf(im.Infections__c);
+}
+```
+
+Finally, we serialize our objects into strings and return them to our lightning component
+```javascript
+Map<String, String> labelsandmetrics = new Map<String, String>();
+labelsandmetrics.put('labels', JSON.serialize(dateslist));
+labelsandmetrics.put('datas', JSON.serialize(metriclist));
+
+return labelsandmetrics;
 ```
