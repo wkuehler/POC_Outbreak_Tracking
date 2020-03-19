@@ -1,12 +1,7 @@
 <aura:component controller="InfectionMetricsController" implements="forceCommunity:availableForAllPageTypes,flexipage:availableForAllPageTypes" access="global" >
 	<aura:attribute access="private" name="infectiondata" type="Object" />
 
-    <ltng:require scripts="{!join(',',
-    				$Resource.ChartJS23, 
-    				$Resource.OlympicDataService)}"
-					afterScriptsLoaded="{!c.doInit}" />
-
-    <aura:registerEvent name="chartEvent" type="c:ChartEvent"/>
+    <ltng:require scripts="{!$Resource.ChartJS23}" afterScriptsLoaded="{!c.doInit}" />
 
 	<lightning:card>
 		<div>

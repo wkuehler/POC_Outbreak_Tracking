@@ -1,20 +1,27 @@
-# Salesforce App
+# POC Outbreak Tracking
 
-This guide helps Salesforce developers who are new to Visual Studio Code go from zero to a deployed app using Salesforce Extensions for VS Code and Salesforce CLI.
+My goals for this proof of concept was to demonstrate how to use Chart.js within Aura Lightning Components.  Given current events, i decided to use COVID-19 infection data from the Commonwealth of Pennsylvania for my dataset.
 
-## Part 1: Choosing a Development Model
+## Part 1: Creating the Infection Metrics custom object
 
-There are two types of developer processes or models supported in Salesforce Extensions for VS Code and Salesforce CLI. These models are explained below. Each model offers pros and cons and is fully supported.
+This is the object that will hold all of our data.  Each record contains the Date, State, County, number of Infections and number of Deaths.  I created a custom tab and basic list views for this object as well.
 
-### Package Development Model
+## Part 2:  Uploading the Chart.js static resource
 
-The package development model allows you to create self-contained applications or libraries that are deployed to your org as a single package. These packages are typically developed against source-tracked orgs called scratch orgs. This development model is geared toward a more modern type of software development process that uses org source tracking, source control, and continuous integration and deployment.
+This is the Javascript library that we will use to render our chart.  In this example, we are using v2.3.0 which can be downloaded directly from https://www.chartjs.org/
 
-If you are starting a new project, we recommend that you consider the package development model. To start developing with this model in Visual Studio Code, see [Package Development Model with VS Code](https://forcedotcom.github.io/salesforcedx-vscode/articles/user-guide/package-development-model). For details about the model, see the [Package Development Model](https://trailhead.salesforce.com/en/content/learn/modules/sfdx_dev_model) Trailhead module.
+## Part 3:  Creating our Aura Lightning Component
 
-If you are developing against scratch orgs, use the command `SFDX: Create Project` (VS Code) or `sfdx force:project:create` (Salesforce CLI)  to create your project. If you used another command, you might want to start over with that command.
+### Component
 
-When working with source-tracked orgs, use the commands `SFDX: Push Source to Org` (VS Code) or `sfdx force:source:push` (Salesforce CLI) and `SFDX: Pull Source from Org` (VS Code) or `sfdx force:source:pull` (Salesforce CLI). Do not use the `Retrieve` and `Deploy` commands with scratch orgs.
+The component is pretty straight forward:  
+
+We create an attribute that will hold the data retrieved from our controller
+```json
+<aura:attribute access="private" name="infectiondata" type="Object" />
+```
+
+
 
 ### Org Development Model
 
