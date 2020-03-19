@@ -1,30 +1,25 @@
 # POC Outbreak Tracking
-
 My goals for this proof of concept was to demonstrate how to use Chart.js within Aura Lightning Components.  Given current events, i decided to use COVID-19 infection data from the Commonwealth of Pennsylvania for my dataset.
 
 ![image](https://user-images.githubusercontent.com/1509672/77087221-3e2a4a00-69d9-11ea-8f85-5da916c8fc9f.png)
 
 ## Part 1: Creating the Infection Metrics custom object
-
 This is the object that will hold all of our data.  Each record contains the Date, State, County, number of Infections and number of Deaths.  I created a custom tab and basic list views for this object as well.
 
 ## Part 2:  Uploading the Chart.js static resource
-
 This is the Javascript library that we will use to render our chart.  In this example, we are using v2.3.0 which can be downloaded directly from https://www.chartjs.org/
 
 ## Part 3:  Creating our Aura Lightning Component
+While i think that the component is pretty straight forward, it could absolutely be simplified by combining all methods into the doInit controller method and doing away with the helper altogether.  That said, i though that keeping everything separated would allow for easy expansion later.
 
 ### Component
-
-The component is pretty straight forward:  
-
 We create an attribute that will hold the data retrieved from our controller.  Notice that the type is Object.
-```
+```html
 <aura:attribute access="private" name="infectiondata" type="Object" />
 ```
 
 We load our static resource which contains the chart.js javascript library.  Once the library is loaded, we call our component controller's doInit method
-```
+```html
 <ltng:require scripts="{!$Resource.ChartJS23}" afterScriptsLoaded="{!c.doInit}" />
 ```
 
@@ -39,7 +34,7 @@ Finally, we create the neccessary markup to display our actual chart
 ```
 
 ### Component Controller
-The controller is pretty straight forward and only contains our doInit method which calls our getInfectionData_js() helper method
+The controller contains a single method, doInit(), which calls our getInfectionData_js() helper method
 ```javascript
 ({
     doInit : function(cmp, event, helper) {
@@ -48,13 +43,11 @@ The controller is pretty straight forward and only contains our doInit method wh
 })
 ```
 
-
 ### Component Helper
-
 Our helper contains two methods:
 
 #### getInfectionData_js()
-Calls our Apex controller to get the data 
+Calls our Apex controller to get the data that we need, then calls buildStackedBar to build the chart.
 ```javascript
 getInfectionData_js : function(cmp) {
     var action = cmp.get("c.getInfectionData");
@@ -81,7 +74,6 @@ getInfectionData_js : function(cmp) {
     $A.enqueueAction(action);
 }
 ```
-
 
 #### buildStackedBar()
 Constructs our stacked bar chart.
@@ -135,6 +127,59 @@ buildStackedBar : function(cmp) {
 }
 ```
 
+These two lines convert our serialized json into objects that we can work with:
+```javascript
+var datas = JSON.parse(infectiondata.datas);
+var labels = JSON.parse(infectiondata.labels);
+```
+
+We then iterate through our data and build the dataset that is needed for our chart:
+```javascript
+Object.keys(datas).forEach(function (item) {
+    datasets.push(datas[item]); // value
+});
+```
+
+Before we create our chart, we need to find the html component that it will hold it
+```javascript
+var ctx = cmp.find("stackedbarchart").getElement();
+```
+Then, finally, we construct our chart.js chart:
+```javascript
+var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: datasets,
+    },
+    options: {
+        tooltips: {
+        displayColors: true,
+        callbacks:{
+            mode: 'x',
+        },
+        },
+        scales: {
+        xAxes: [{
+            stacked: true,
+            gridLines: {
+            display: false,
+            }
+        }],
+        yAxes: [{
+            stacked: true,
+            ticks: {
+            beginAtZero: true,
+            },
+            type: 'linear',
+        }]
+        },
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: { position: 'right' },
+    }
+});    
+```
 ### Apex Controller - InfectionMetricsController.cls
 
 Our apex controller contains several key parts:
