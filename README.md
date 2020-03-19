@@ -81,47 +81,108 @@ getInfectionData_js : function(cmp) {
 ```
 
 
-and buildStackedBar() which actually constructs our stacked bar chart.
+#### buildStackedBar()
+Constructs our stacked bar chart.
+```javascript
+buildStackedBar : function(cmp) {
+  var infectiondata = cmp.get("v.infectiondata");
 
+  var datas = JSON.parse(infectiondata.datas);
+  var labels = JSON.parse(infectiondata.labels);
+  
+  var datasets = [];
 
-
-### Org Development Model
-
-The org development model allows you to connect directly to a non-source-tracked org (sandbox, Developer Edition (DE) org, Trailhead Playground, or even a production org) to retrieve and deploy code directly. This model is similar to the type of development you have done in the past using tools such as Force.com IDE or MavensMate.
-
-To start developing with this model in Visual Studio Code, see [Org Development Model with VS Code](https://forcedotcom.github.io/salesforcedx-vscode/articles/user-guide/org-development-model). For details about the model, see the [Org Development Model](https://trailhead.salesforce.com/content/learn/modules/org-development-model) Trailhead module.
-
-If you are developing against non-source-tracked orgs, use the command `SFDX: Create Project with Manifest` (VS Code) or `sfdx force:project:create --manifest` (Salesforce CLI) to create your project. If you used another command, you might want to start over with this command to create a Salesforce DX project.
-
-When working with non-source-tracked orgs, use the commands `SFDX: Deploy Source to Org` (VS Code) or `sfdx force:source:deploy` (Salesforce CLI) and `SFDX: Retrieve Source from Org` (VS Code) or `sfdx force:source:retrieve` (Salesforce CLI). The `Push` and `Pull` commands work only on orgs with source tracking (scratch orgs).
-
-## The `sfdx-project.json` File
-
-The `sfdx-project.json` file contains useful configuration information for your project. See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm) in the _Salesforce DX Developer Guide_ for details about this file.
-
-The most important parts of this file for getting started are the `sfdcLoginUrl` and `packageDirectories` properties.
-
-The `sfdcLoginUrl` specifies the default login URL to use when authorizing an org.
-
-The `packageDirectories` filepath tells VS Code and Salesforce CLI where the metadata files for your project are stored. You need at least one package directory set in your file. The default setting is shown below. If you set the value of the `packageDirectories` property called `path` to `force-app`, by default your metadata goes in the `force-app` directory. If you want to change that directory to something like `src`, simply change the `path` value and make sure the directory you’re pointing to exists.
-
-```json
-"packageDirectories" : [
-    {
-      "path": "force-app",
-      "default": true
-    }
-]
+  Object.keys(datas).forEach(function (item) {
+      datasets.push(datas[item]); // value
+  });
+            
+  var ctx = cmp.find("stackedbarchart").getElement();
+  var myChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+          labels: labels,
+          datasets: datasets,
+      },
+      options: {
+          tooltips: {
+          displayColors: true,
+          callbacks:{
+              mode: 'x',
+          },
+          },
+          scales: {
+          xAxes: [{
+              stacked: true,
+              gridLines: {
+              display: false,
+              }
+          }],
+          yAxes: [{
+              stacked: true,
+              ticks: {
+              beginAtZero: true,
+              },
+              type: 'linear',
+          }]
+          },
+              responsive: true,
+              maintainAspectRatio: false,
+              legend: { position: 'right' },
+      }
+  });       
+}
 ```
 
-## Part 2: Working with Source
+### Apex Controller - InfectionMetricsController.cls
 
-For details about developing against scratch orgs, see the [Package Development Model](https://trailhead.salesforce.com/en/content/learn/modules/sfdx_dev_model) module on Trailhead or [Package Development Model with VS Code](https://forcedotcom.github.io/salesforcedx-vscode/articles/user-guide/package-development-model).
+Our apex controller contains several key parts:
 
-For details about developing against orgs that don’t have source tracking, see the [Org Development Model](https://trailhead.salesforce.com/content/learn/modules/org-development-model) module on Trailhead or [Org Development Model with VS Code](https://forcedotcom.github.io/salesforcedx-vscode/articles/user-guide/org-development-model).
+#### Metrics() subclass
+This is where we will store our data for each county
+```javascript
+public class Metrics {
+    String label;
+    String backgroundColor;
+    List<Integer> data;
+    
+    public Metrics(String a, String b, List<Integer> c) {
+        label = a;
+        backgroundColor = b;
+        data = c;
+    } 
+}
+```
 
-## Part 3: Deploying to Production
-
-Don’t deploy your code to production directly from Visual Studio Code. The deploy and retrieve commands do not support transactional operations, which means that a deployment can fail in a partial state. Also, the deploy and retrieve commands don’t run the tests needed for production deployments. The push and pull commands are disabled for orgs that don’t have source tracking, including production orgs.
-
-Deploy your changes to production using [packaging](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_dev2gp.htm) or by [converting your source](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference_force_source.htm#cli_reference_convert) into metadata format and using the [metadata deploy command](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference_force_mdapi.htm#cli_reference_deploy).
+#### hexCodeGenerator() method
+This method is used to generate a random hexidecial color code for each county data set
+```javascript
+public static String hexCodeGenerator() {
+    String hexval = '#';
+    for(Integer i = 0 ; i < 6 ; i++) {
+        Integer rannum = Integer.valueOf(Math.floor(Math.random()*16));
+        String charval = '';
+        switch on rannum {
+            when 0 { charval = '0'; }
+            when 1 { charval = '1'; }
+            when 2 { charval = '2'; }
+            when 3 { charval = '3'; }
+            when 4 { charval = '4'; }
+            when 5 { charval = '5'; }
+            when 6 { charval = '6'; }
+            when 7 { charval = '7'; }
+            when 8 { charval = '8'; }
+            when 9 { charval = '9'; }
+            when 10 { charval = 'a'; }
+            when 11 { charval = 'b'; }
+            when 12 { charval = 'c'; }
+            when 13 { charval = 'd'; }
+            when 14 { charval = 'e'; }
+            when 15 { charval = 'f'; }
+        }
+        
+        hexval += charval;
+    }
+    
+    return hexval;
+}
+```
