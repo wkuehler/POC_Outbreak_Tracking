@@ -34,7 +34,7 @@ Finally, we create the neccessary markup to display our actual chart
 ```
 
 ### Component Controller
-The controller contains a single method, doInit(), which calls our getInfectionData_js() helper method
+The controller contains a single function, doInit(), which calls our getInfectionData_js() helper function.
 ```javascript
 ({
     doInit : function(cmp, event, helper) {
@@ -47,87 +47,20 @@ The controller contains a single method, doInit(), which calls our getInfectionD
 Our helper contains two methods:
 
 #### getInfectionData_js()
-Calls our Apex controller to get the data that we need, then calls buildStackedBar to build the chart.
+This is where we execute the callout to our auraenabled apex controller method. If the call is successful, we set our infectiondata component attribute and then call the buildStackedBar function.
 ```javascript
-getInfectionData_js : function(cmp) {
-    var action = cmp.get("c.getInfectionData");
-    
-    action.setCallback(this, function(response) {
-        var state = response.getState();
-        
-        if (cmp.isValid() && state === "SUCCESS") {
-            var infectiondata = response.getReturnValue();
-            cmp.set("v.infectiondata", infectiondata);
-            this.buildStackedBar(cmp);
-        }
-        else if (cmp.isValid() && state === "ERROR") {
-            var errors = response.getError();
-            if (errors) {
-                if (errors[0] && errors[0].message)
-                    console.log("Error message: " + errors[0].message);
-            }
-            else
-                console.log("Unknown error");
-        }
-    });
-    
-    $A.enqueueAction(action);
-}
+var infectiondata = response.getReturnValue();
+cmp.set("v.infectiondata", infectiondata);
+this.buildStackedBar(cmp);
 ```
 
 #### buildStackedBar()
-Constructs our stacked bar chart.
+This function is where we actually build our stacked bar chart.  First, we get our infectiondata attribute and put it into a local variable:
 ```javascript
-buildStackedBar : function(cmp) {
-  var infectiondata = cmp.get("v.infectiondata");
-
-  var datas = JSON.parse(infectiondata.datas);
-  var labels = JSON.parse(infectiondata.labels);
-  
-  var datasets = [];
-
-  Object.keys(datas).forEach(function (item) {
-      datasets.push(datas[item]); // value
-  });
-            
-  var ctx = cmp.find("stackedbarchart").getElement();
-  var myChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-          labels: labels,
-          datasets: datasets,
-      },
-      options: {
-          tooltips: {
-          displayColors: true,
-          callbacks:{
-              mode: 'x',
-          },
-          },
-          scales: {
-          xAxes: [{
-              stacked: true,
-              gridLines: {
-              display: false,
-              }
-          }],
-          yAxes: [{
-              stacked: true,
-              ticks: {
-              beginAtZero: true,
-              },
-              type: 'linear',
-          }]
-          },
-              responsive: true,
-              maintainAspectRatio: false,
-              legend: { position: 'right' },
-      }
-  });       
-}
+var infectiondata = cmp.get("v.infectiondata");
 ```
 
-These two lines convert our serialized json into objects that we can work with:
+These two lines convert our serialized json into separate labels and data objects that we can work with:
 ```javascript
 var datas = JSON.parse(infectiondata.datas);
 var labels = JSON.parse(infectiondata.labels);
@@ -135,6 +68,8 @@ var labels = JSON.parse(infectiondata.labels);
 
 We then iterate through our data and build the dataset that is needed for our chart:
 ```javascript
+var datasets = [];
+
 Object.keys(datas).forEach(function (item) {
     datasets.push(datas[item]); // value
 });
@@ -144,7 +79,8 @@ Before we create our chart, we need to find the html component that it will hold
 ```javascript
 var ctx = cmp.find("stackedbarchart").getElement();
 ```
-Then, finally, we construct our chart.js chart:
+
+Then, finally, we construct our chart.js chart.
 ```javascript
 var myChart = new Chart(ctx, {
     type: 'bar',
@@ -180,12 +116,16 @@ var myChart = new Chart(ctx, {
     }
 });    
 ```
-### Apex Controller - InfectionMetricsController.cls
+
+
+
+
+## Apex Controller - InfectionMetricsController.cls
 
 Our apex controller contains several key parts:
 
 #### Metrics() subclass
-This is where we will store our data for each county
+This is where we will store the data for each county
 ```javascript
 public class Metrics {
     String label;
@@ -201,7 +141,7 @@ public class Metrics {
 ```
 
 #### hexCodeGenerator() method
-This method is used to generate a random hexidecial color code for each county data set
+While we could hardcode a list of colors for each county in our dataset, this is not a very scalable option if we wanted to add additional states later.  For this reason, I created the following method to generate a random hexidecial color code for each county data set
 ```javascript
 public static String hexCodeGenerator() {
     String hexval = '#';
@@ -232,4 +172,28 @@ public static String hexCodeGenerator() {
     
     return hexval;
 }
+```
+
+#### getInfectionData() method
+This is the auraEnabled method that we are calling from out lightning component.  We begin by querying our data.  The order by clause is important to ensure that data displays in the same order in each stacked bar.
+```javascript
+List<Infection_Metric__c> ims = [SELECT Id, Name, County__c, State__c, Infections__c, Deaths__c, Date__c
+                                 FROM Infection_Metric__c
+                                 ORDER BY Date__c, State__c, County__c];
+```
+
+We then generate unique sets of Dates and Counties
+```javascript
+Set<Date> datesset = new Set<Date>();
+Set<String> counties = new Set<String>();
+for(Infection_Metric__c im : ims) {
+    datesset.add(im.Date__c);
+    counties.add(im.County__c);
+}
+```
+
+We then convert our unique set of dates to an ordered list.  While this was important in an early version, this could most likely be removed.
+```javascript
+List<Date> dateslist = new List<Date>(datesset);
+dateslist.sort();
 ```
