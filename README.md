@@ -27,19 +27,18 @@ We load our static resource which contains the chart.js javascript library.  Onc
 ```
 
 Finally, we create the neccessary markup to display our actual chart
-```
-	<lightning:card>
-		<div>
-			<div class="slds-text-heading--medium">Infections / Deaths Bar</div>
-			<canvas aura:id="stackedbarchart" height="380"></canvas>
-		</div>
-	</lightning:card>
+```html
+<lightning:card>
+  <div>
+    <div class="slds-text-heading--medium">Infections / Deaths Bar</div>
+    <canvas aura:id="stackedbarchart" height="380"></canvas>
+  </div>
+</lightning:card>
 ```
 
 ### Component Controller
-
-The only method in our controller is the doInit method which calls out getInfectionData_js helper method
-```
+The controller is pretty straight forward and only contains our doInit method which calls our getInfectionData_js() helper method
+```javascript
 ({
     doInit : function(cmp, event, helper) {
         helper.getInfectionData_js(cmp); 
@@ -50,7 +49,39 @@ The only method in our controller is the doInit method which calls out getInfect
 
 ### Component Helper
 
-Our helper contains two methods, the getInfectionData_js() which calls our Apex controller to get the data and buildStackedBar() which actually constructs our stacked bar chart.
+Our helper contains two methods:
+
+#### getInfectionData_js()
+Calls our Apex controller to get the data 
+```javascript
+getInfectionData_js : function(cmp) {
+    var action = cmp.get("c.getInfectionData");
+    
+    action.setCallback(this, function(response) {
+        var state = response.getState();
+        
+        if (cmp.isValid() && state === "SUCCESS") {
+            var infectiondata = response.getReturnValue();
+            cmp.set("v.infectiondata", infectiondata);
+            this.buildStackedBar(cmp);
+        }
+        else if (cmp.isValid() && state === "ERROR") {
+            var errors = response.getError();
+            if (errors) {
+                if (errors[0] && errors[0].message)
+                    console.log("Error message: " + errors[0].message);
+            }
+            else
+                console.log("Unknown error");
+        }
+    });
+    
+    $A.enqueueAction(action);
+}
+```
+
+
+and buildStackedBar() which actually constructs our stacked bar chart.
 
 
 
