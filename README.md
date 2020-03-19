@@ -2,6 +2,8 @@
 
 My goals for this proof of concept was to demonstrate how to use Chart.js within Aura Lightning Components.  Given current events, i decided to use COVID-19 infection data from the Commonwealth of Pennsylvania for my dataset.
 
+![image](https://user-images.githubusercontent.com/1509672/77087221-3e2a4a00-69d9-11ea-8f85-5da916c8fc9f.png)
+
 ## Part 1: Creating the Infection Metrics custom object
 
 This is the object that will hold all of our data.  Each record contains the Date, State, County, number of Infections and number of Deaths.  I created a custom tab and basic list views for this object as well.
