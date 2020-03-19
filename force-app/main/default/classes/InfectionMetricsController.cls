@@ -67,11 +67,9 @@ public class InfectionMetricsController {
         Map<String, Metrics> metriclist = new Map<String, Metrics>();
 
         for(String county : counties) {
-            Integer i = 0;
             List<Integer> tempints = new List<Integer>();
             for(Date d : dateslist) {
-                tempints.add(i);
-                i++;
+                tempints.add(0);
             }
 
             metriclist.put(county, new Metrics(county, hexCodeGenerator(), tempints));
