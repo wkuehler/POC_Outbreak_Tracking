@@ -47,7 +47,9 @@ public class InfectionMetricsController {
     public Static Map<String, String> getInfectionData(){
         
         //Get all of our infection records
-        List<Infection_Metric__c> ims = [SELECT Id, Name, County__c, State__c, Infections__c, Deaths__c, Date__c FROM Infection_Metric__c];
+        List<Infection_Metric__c> ims = [SELECT Id, Name, County__c, State__c, Infections__c, Deaths__c, Date__c
+                                         FROM Infection_Metric__c
+                                         ORDER BY Date__c, State__c, County__c];
         
         //Build a set of unique dates and counties
         Set<Date> datesset = new Set<Date>();
